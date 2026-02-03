@@ -66,6 +66,16 @@ func TestExtractServiceName(t *testing.T) {
 			},
 			expected: "my-service",
 		},
+		{
+			name: "Working directory is root slash - fallback to container name",
+			container: DockerContainer{
+				Names: "/my-container",
+				Labels: map[string]string{
+					"com.docker.compose.project.working_dir": "/",
+				},
+			},
+			expected: "my-container",
+		},
 	}
 
 	for _, tt := range tests {
