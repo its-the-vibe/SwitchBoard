@@ -11,5 +11,5 @@ services:
     environment:
       - PORT=8080
     volumes:
-      - ./config.json:/root/config.json:ro
+      - ./config.json:/config.json:ro
     restart: on-failure:10
