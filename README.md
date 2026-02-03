@@ -39,6 +39,8 @@ Edit `config.json` to configure your services and endpoints:
 
 ### Running the Application
 
+#### Option 1: Using Go directly
+
 ```bash
 # Build and run
 go build -o switchboard
@@ -54,6 +56,29 @@ To use a different port, set the `PORT` environment variable:
 
 ```bash
 PORT=3000 go run main.go
+```
+
+#### Option 2: Using Docker
+
+```bash
+# Build the Docker image
+docker build -t switchboard .
+
+# Run the container
+docker run -p 8080:8080 -v $(pwd)/config.json:/root/config.json switchboard
+```
+
+#### Option 3: Using Docker Compose
+
+```bash
+# Start the application
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the application
+docker-compose down
 ```
 
 ## API Endpoints
