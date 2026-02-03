@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -57,13 +58,11 @@ var config Config
 func extractServiceName(container DockerContainer) string {
 	// Try to extract from working directory label
 	if workDir, ok := container.Labels["com.docker.compose.project.working_dir"]; ok && workDir != "" {
-		// Extract the last path segment
-		parts := strings.Split(strings.TrimSuffix(workDir, "/"), "/")
-		if len(parts) > 0 {
-			serviceName := parts[len(parts)-1]
-			if serviceName != "" {
-				return serviceName
-			}
+		// Extract the base name (last path segment)
+		serviceName := filepath.Base(workDir)
+		// filepath.Base returns "." for empty paths and "/" for root
+		if serviceName != "" && serviceName != "." && serviceName != "/" {
+			return serviceName
 		}
 	}
 
