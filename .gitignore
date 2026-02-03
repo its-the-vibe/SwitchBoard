@@ -34,3 +34,5 @@ go.work.sum
 # Built binaries
 switchboard
 SwitchBoard
+
+config.json
