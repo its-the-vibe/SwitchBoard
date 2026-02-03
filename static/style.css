@@ -1,0 +1,234 @@
+/* Retro 60's Control Panel Styling */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.control-panel {
+    background: linear-gradient(to bottom, #4a4a4a 0%, #2a2a2a 100%);
+    border: 8px solid #1a1a1a;
+    border-radius: 12px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.1);
+    max-width: 900px;
+    width: 100%;
+}
+
+.panel-header {
+    background: linear-gradient(to bottom, #3a3a3a 0%, #2a2a2a 100%);
+    padding: 30px;
+    border-bottom: 4px solid #1a1a1a;
+    text-align: center;
+    border-radius: 4px 4px 0 0;
+}
+
+.panel-title {
+    font-size: 42px;
+    font-weight: bold;
+    color: #ff6b35;
+    text-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+    letter-spacing: 8px;
+    margin-bottom: 10px;
+}
+
+.panel-subtitle {
+    font-size: 14px;
+    color: #a0a0a0;
+    letter-spacing: 4px;
+}
+
+.panel-body {
+    padding: 40px 30px;
+}
+
+.service-row {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px 25px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 2px solid #3a3a3a;
+    transition: all 0.3s ease;
+}
+
+.service-row:hover {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: #4a4a4a;
+}
+
+.service-info {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.service-name {
+    font-size: 20px;
+    color: #ffffff;
+    font-weight: bold;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+.service-status {
+    font-size: 12px;
+    color: #a0a0a0;
+    font-family: monospace;
+}
+
+.service-controls {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.status-light {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid #2a2a2a;
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.status-light.running {
+    background: radial-gradient(circle at 30% 30%, #00ff00, #008800);
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(0, 255, 0, 0.8),
+        0 0 40px rgba(0, 255, 0, 0.4);
+}
+
+.status-light.stopped {
+    background: radial-gradient(circle at 30% 30%, #ff0000, #880000);
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(255, 0, 0, 0.8),
+        0 0 40px rgba(255, 0, 0, 0.4);
+}
+
+.status-light.unknown {
+    background: radial-gradient(circle at 30% 30%, #ffa500, #cc8400);
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(255, 165, 0, 0.8),
+        0 0 40px rgba(255, 165, 0, 0.4);
+}
+
+.toggle-switch {
+    position: relative;
+    width: 80px;
+    height: 50px;
+    background: #1a1a1a;
+    border-radius: 25px;
+    cursor: pointer;
+    border: 3px solid #2a2a2a;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.toggle-switch:hover {
+    border-color: #3a3a3a;
+}
+
+.toggle-switch.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.toggle-handle {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(to bottom, #666, #444);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.toggle-switch.on .toggle-handle {
+    left: 34px;
+    background: linear-gradient(to bottom, #00cc00, #008800);
+    box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.panel-footer {
+    background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%);
+    padding: 20px 30px;
+    border-top: 4px solid #1a1a1a;
+    border-radius: 0 0 4px 4px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.status-label {
+    font-size: 14px;
+    color: #a0a0a0;
+    letter-spacing: 2px;
+}
+
+.status-text {
+    font-size: 14px;
+    color: #00ff00;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.status-text.error {
+    color: #ff0000;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+/* Loading animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .panel-title {
+        font-size: 28px;
+        letter-spacing: 4px;
+    }
+    
+    .service-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .service-controls {
+        margin-top: 15px;
+        width: 100%;
+        justify-content: space-between;
+    }
+}

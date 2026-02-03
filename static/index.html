@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwitchBoard - Control Panel</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="control-panel">
+        <div class="panel-header">
+            <h1 class="panel-title">SWITCHBOARD</h1>
+            <div class="panel-subtitle">SERVICE CONTROL SYSTEM</div>
+        </div>
+        
+        <div class="panel-body" id="servicesContainer">
+            <!-- Services will be dynamically loaded here -->
+        </div>
+        
+        <div class="panel-footer">
+            <div class="status-indicator">
+                <span class="status-label">SYSTEM STATUS:</span>
+                <span class="status-text" id="systemStatus">INITIALIZING</span>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/app.js"></script>
+</body>
+</html>

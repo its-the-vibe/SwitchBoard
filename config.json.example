@@ -1,0 +1,15 @@
+{
+  "services": [
+    {
+      "name": "github-dispatcher",
+      "displayName": "GitHub Dispatcher"
+    },
+    {
+      "name": "RediFire",
+      "displayName": "RediFire"
+    }
+  ],
+  "dockerStatusUrl": "http://docker-service-url/ps",
+  "toggleServiceUrl": "http://turner-of-and-on-service/messages",
+  "pollIntervalSeconds": 5
+}
