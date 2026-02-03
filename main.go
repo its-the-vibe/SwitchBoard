@@ -66,7 +66,7 @@ func extractServiceName(container DockerContainer) string {
 			}
 		}
 	}
-	
+
 	// Fallback to container name
 	return strings.TrimPrefix(container.Names, "/")
 }
