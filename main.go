@@ -28,11 +28,11 @@ type ServiceConfig struct {
 
 // DockerContainer represents the docker ps JSON output structure
 type DockerContainer struct {
-	Command string            `json:"Command"`
-	State   string            `json:"State"`
-	Status  string            `json:"Status"`
-	Names   string            `json:"Names"`
-	Labels  map[string]string `json:"Labels"`
+	Command string `json:"Command"`
+	State   string `json:"State"`
+	Status  string `json:"Status"`
+	Names   string `json:"Names"`
+	Labels  string `json:"Labels"`
 }
 
 // ServiceStatus represents the status of a service
@@ -57,12 +57,20 @@ var config Config
 // to using the container name.
 func extractServiceName(container DockerContainer) string {
 	// Try to extract from working directory label
-	if workDir, ok := container.Labels["com.docker.compose.project.working_dir"]; ok && workDir != "" {
-		// Extract the base name (last path segment)
-		serviceName := filepath.Base(workDir)
-		// filepath.Base returns "." for empty paths and "/" for root
-		if serviceName != "" && serviceName != "." && serviceName != "/" {
-			return serviceName
+	// Labels are comma-separated key=value pairs
+	if container.Labels != "" {
+		labels := strings.Split(container.Labels, ",")
+		for _, label := range labels {
+			parts := strings.SplitN(label, "=", 2)
+			if len(parts) == 2 && parts[0] == "com.docker.compose.project.working_dir" {
+				workDir := parts[1]
+				// Extract the base name (last path segment)
+				serviceName := filepath.Base(workDir)
+				// filepath.Base returns "." for empty paths and "/" for root
+				if serviceName != "" && serviceName != "." && serviceName != "/" {
+					return serviceName
+				}
+			}
 		}
 	}
 
