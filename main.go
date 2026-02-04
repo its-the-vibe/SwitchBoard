@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -31,6 +32,7 @@ type DockerContainer struct {
 	State   string `json:"State"`
 	Status  string `json:"Status"`
 	Names   string `json:"Names"`
+	Labels  string `json:"Labels"`
 }
 
 // ServiceStatus represents the status of a service
@@ -48,6 +50,33 @@ type ToggleRequest struct {
 }
 
 var config Config
+
+// extractServiceName extracts the service name from a Docker container.
+// It first tries to use the com.docker.compose.project.working_dir label,
+// extracting the last path segment. If that's not available, it falls back
+// to using the container name.
+func extractServiceName(container DockerContainer) string {
+	// Try to extract from working directory label
+	// Labels are comma-separated key=value pairs
+	if container.Labels != "" {
+		labels := strings.Split(container.Labels, ",")
+		for _, label := range labels {
+			parts := strings.SplitN(label, "=", 2)
+			if len(parts) == 2 && parts[0] == "com.docker.compose.project.working_dir" {
+				workDir := parts[1]
+				// Extract the base name (last path segment)
+				serviceName := filepath.Base(workDir)
+				// filepath.Base returns "." for empty paths and "/" for root
+				if serviceName != "" && serviceName != "." && serviceName != "/" {
+					return serviceName
+				}
+			}
+		}
+	}
+
+	// Fallback to container name
+	return strings.TrimPrefix(container.Names, "/")
+}
 
 func main() {
 	// Load configuration
@@ -121,10 +150,9 @@ func handleStatus(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// Extract service name from container names
-		// Names format is usually "/container-name" or can include multiple names
-		names := strings.TrimPrefix(container.Names, "/")
-		containerMap[names] = container
+		// Extract service name from container
+		serviceName := extractServiceName(container)
+		containerMap[serviceName] = container
 	}
 
 	// Build status response for configured services
