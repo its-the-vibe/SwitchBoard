@@ -164,7 +164,15 @@ SwitchBoard expects the Docker status endpoint to return `docker ps --output jso
 
 ## Systemd Integration
 
-SwitchBoard expects the systemd status endpoint to return a JSON object with service names as keys and their states as values:
+SwitchBoard polls the systemd status endpoint with a `services` query parameter containing a comma-separated list of service names.
+
+**Request Format:**
+```
+GET http://systemd-service-url/status?services=poppit,poppit-builder,thisisfine,ttyd
+```
+
+**Expected Response:**
+The endpoint should return a JSON object with service names as keys and their states as values:
 
 ```json
 {

@@ -213,11 +213,24 @@ func fetchSystemdStatuses() []ServiceStatus {
 		return []ServiceStatus{}
 	}
 	
+	// Build comma-separated list of service names
+	serviceNames := make([]string, 0, len(config.SystemdServices))
+	for _, svc := range config.SystemdServices {
+		serviceNames = append(serviceNames, svc.Name)
+	}
+	servicesParam := strings.Join(serviceNames, ",")
+	
+	// Build URL with services parameter
+	statusURL := config.SystemdStatusURL
+	if servicesParam != "" {
+		statusURL = fmt.Sprintf("%s?services=%s", config.SystemdStatusURL, servicesParam)
+	}
+	
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
 
-	resp, err := client.Get(config.SystemdStatusURL)
+	resp, err := client.Get(statusURL)
 	if err != nil {
 		log.Printf("Error fetching systemd status: %v", err)
 		return buildUnknownStatuses(config.SystemdServices, "systemd", "Failed to fetch systemd status")
