@@ -87,6 +87,13 @@ func TestFetchSystemdStatusesEmptyServices(t *testing.T) {
 	requestReceived := false
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestReceived = true
+		
+		// Verify no services parameter is sent for empty list
+		servicesParam := r.URL.Query().Get("services")
+		if servicesParam != "" {
+			t.Errorf("Expected no services parameter for empty list, got: %s", servicesParam)
+		}
+		
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintln(w, "{}")
 	}))
@@ -111,3 +118,50 @@ func TestFetchSystemdStatusesEmptyServices(t *testing.T) {
 		t.Error("Expected request to be made even with empty services list")
 	}
 }
+
+func TestFetchSystemdStatusesWithSpecialCharacters(t *testing.T) {
+	// Save original config and restore it after test
+	originalConfig := config
+	defer func() { config = originalConfig }()
+
+	// Create a test server that checks for properly encoded parameters
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check that the services parameter is present and properly decoded
+		servicesParam := r.URL.Query().Get("services")
+		
+		// The query should be properly decoded by the server
+		expectedServices := "service-1,service@test,service+plus"
+		if servicesParam != expectedServices {
+			t.Errorf("Expected services parameter to be '%s', got '%s'", expectedServices, servicesParam)
+		}
+
+		// Return a mock response
+		response := map[string]string{
+			"service-1":      "active",
+			"service@test":   "inactive",
+			"service+plus":   "failed",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	// Set up test config with services that have special characters
+	config = Config{
+		SystemdServices: []ServiceConfig{
+			{Name: "service-1", DisplayName: "Service 1"},
+			{Name: "service@test", DisplayName: "Service Test"},
+			{Name: "service+plus", DisplayName: "Service Plus"},
+		},
+		SystemdStatusURL: server.URL,
+	}
+
+	// Call the function
+	statuses := fetchSystemdStatuses()
+
+	// Verify results
+	if len(statuses) != 3 {
+		t.Errorf("Expected 3 statuses, got %d", len(statuses))
+	}
+}
+

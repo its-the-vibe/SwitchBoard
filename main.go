@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -218,12 +219,22 @@ func fetchSystemdStatuses() []ServiceStatus {
 	for _, svc := range config.SystemdServices {
 		serviceNames = append(serviceNames, svc.Name)
 	}
-	servicesParam := strings.Join(serviceNames, ",")
 	
-	// Build URL with services parameter
+	// Build URL with properly encoded services parameter
 	statusURL := config.SystemdStatusURL
-	if servicesParam != "" {
-		statusURL = fmt.Sprintf("%s?services=%s", config.SystemdStatusURL, servicesParam)
+	if len(serviceNames) > 0 {
+		// Parse the base URL
+		baseURL, err := url.Parse(config.SystemdStatusURL)
+		if err != nil {
+			log.Printf("Error parsing systemd status URL: %v", err)
+			return buildUnknownStatuses(config.SystemdServices, "systemd", "Invalid status URL")
+		}
+		
+		// Add query parameters
+		query := baseURL.Query()
+		query.Set("services", strings.Join(serviceNames, ","))
+		baseURL.RawQuery = query.Encode()
+		statusURL = baseURL.String()
 	}
 	
 	client := &http.Client{
