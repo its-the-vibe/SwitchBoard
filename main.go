@@ -14,8 +14,10 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	Services            []ServiceConfig `json:"services"`
+	DockerServices      []ServiceConfig `json:"dockerServices"`
+	SystemdServices     []ServiceConfig `json:"systemdServices"`
 	DockerStatusURL     string          `json:"dockerStatusUrl"`
+	SystemdStatusURL    string          `json:"systemdStatusUrl"`
 	ToggleServiceURL    string          `json:"toggleServiceUrl"`
 	PollIntervalSeconds int             `json:"pollIntervalSeconds"`
 }
@@ -41,6 +43,7 @@ type ServiceStatus struct {
 	DisplayName string `json:"displayName"`
 	State       string `json:"state"`
 	Status      string `json:"status"`
+	Type        string `json:"type"` // "docker" or "systemd"
 }
 
 // ToggleRequest represents a request to toggle a service
@@ -106,15 +109,42 @@ func main() {
 
 // handleConfig returns the configuration to the frontend
 func handleConfig(w http.ResponseWriter, r *http.Request) {
+	// Combine docker and systemd services for backward compatibility
+	allServices := make([]ServiceConfig, 0, len(config.DockerServices)+len(config.SystemdServices))
+	allServices = append(allServices, config.DockerServices...)
+	allServices = append(allServices, config.SystemdServices...)
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"services":            config.Services,
+		"services":            allServices,
+		"dockerServices":      config.DockerServices,
+		"systemdServices":     config.SystemdServices,
 		"pollIntervalSeconds": config.PollIntervalSeconds,
 	})
 }
 
 // handleStatus fetches and returns the current status of all services
 func handleStatus(w http.ResponseWriter, r *http.Request) {
+	statuses := make([]ServiceStatus, 0)
+	
+	// Fetch Docker service statuses
+	dockerStatuses := fetchDockerStatuses()
+	statuses = append(statuses, dockerStatuses...)
+	
+	// Fetch systemd service statuses
+	systemdStatuses := fetchSystemdStatuses()
+	statuses = append(statuses, systemdStatuses...)
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(statuses)
+}
+
+// fetchDockerStatuses fetches the current status of Docker services
+func fetchDockerStatuses() []ServiceStatus {
+	if config.DockerStatusURL == "" {
+		return []ServiceStatus{}
+	}
+	
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
@@ -122,16 +152,15 @@ func handleStatus(w http.ResponseWriter, r *http.Request) {
 	resp, err := client.Get(config.DockerStatusURL)
 	if err != nil {
 		log.Printf("Error fetching docker status: %v", err)
-		http.Error(w, "Failed to fetch service status", http.StatusInternalServerError)
-		return
+		// Return unknown status for configured services
+		return buildUnknownStatuses(config.DockerServices, "docker", "Failed to fetch Docker status")
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Error reading response: %v", err)
-		http.Error(w, "Failed to read service status", http.StatusInternalServerError)
-		return
+		return buildUnknownStatuses(config.DockerServices, "docker", "Failed to read Docker status")
 	}
 
 	// Parse docker ps JSON output (one JSON object per line)
@@ -156,13 +185,14 @@ func handleStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Build status response for configured services
-	statuses := make([]ServiceStatus, 0, len(config.Services))
-	for _, svc := range config.Services {
+	statuses := make([]ServiceStatus, 0, len(config.DockerServices))
+	for _, svc := range config.DockerServices {
 		status := ServiceStatus{
 			Name:        svc.Name,
 			DisplayName: svc.DisplayName,
 			State:       "unknown",
 			Status:      "Not found",
+			Type:        "docker",
 		}
 
 		// Check if container exists in docker ps output
@@ -173,9 +203,90 @@ func handleStatus(w http.ResponseWriter, r *http.Request) {
 
 		statuses = append(statuses, status)
 	}
+	
+	return statuses
+}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(statuses)
+// fetchSystemdStatuses fetches the current status of systemd services
+func fetchSystemdStatuses() []ServiceStatus {
+	if config.SystemdStatusURL == "" {
+		return []ServiceStatus{}
+	}
+	
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := client.Get(config.SystemdStatusURL)
+	if err != nil {
+		log.Printf("Error fetching systemd status: %v", err)
+		return buildUnknownStatuses(config.SystemdServices, "systemd", "Failed to fetch systemd status")
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Error reading systemd response: %v", err)
+		return buildUnknownStatuses(config.SystemdServices, "systemd", "Failed to read systemd status")
+	}
+
+	// Parse systemd status JSON output
+	var systemdMap map[string]string
+	if err := json.Unmarshal(body, &systemdMap); err != nil {
+		log.Printf("Error parsing systemd JSON: %v", err)
+		return buildUnknownStatuses(config.SystemdServices, "systemd", "Failed to parse systemd status")
+	}
+
+	// Build status response for configured services
+	statuses := make([]ServiceStatus, 0, len(config.SystemdServices))
+	for _, svc := range config.SystemdServices {
+		status := ServiceStatus{
+			Name:        svc.Name,
+			DisplayName: svc.DisplayName,
+			State:       "unknown",
+			Status:      "Not found",
+			Type:        "systemd",
+		}
+
+		// Check if service exists in systemd status output
+		if state, found := systemdMap[svc.Name]; found {
+			status.State = state
+			// Map systemd states to user-friendly status messages
+			switch state {
+			case "active":
+				status.Status = "Active"
+			case "inactive":
+				status.Status = "Inactive"
+			case "failed":
+				status.Status = "Failed"
+			case "activating":
+				status.Status = "Starting"
+			case "deactivating":
+				status.Status = "Stopping"
+			default:
+				status.Status = state
+			}
+		}
+
+		statuses = append(statuses, status)
+	}
+	
+	return statuses
+}
+
+// buildUnknownStatuses creates a list of ServiceStatus with unknown state
+func buildUnknownStatuses(services []ServiceConfig, serviceType string, statusMsg string) []ServiceStatus {
+	statuses := make([]ServiceStatus, 0, len(services))
+	for _, svc := range services {
+		statuses = append(statuses, ServiceStatus{
+			Name:        svc.Name,
+			DisplayName: svc.DisplayName,
+			State:       "unknown",
+			Status:      statusMsg,
+			Type:        serviceType,
+		})
+	}
+	return statuses
 }
 
 // handleToggle handles requests to toggle a service on or off
