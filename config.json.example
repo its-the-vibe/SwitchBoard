@@ -1,5 +1,5 @@
 {
-  "services": [
+  "dockerServices": [
     {
       "name": "github-dispatcher",
       "displayName": "GitHub Dispatcher"
@@ -9,7 +9,26 @@
       "displayName": "RediFire"
     }
   ],
+  "systemdServices": [
+    {
+      "name": "poppit",
+      "displayName": "Poppit"
+    },
+    {
+      "name": "poppit-builder",
+      "displayName": "Poppit Builder"
+    },
+    {
+      "name": "thisisfine",
+      "displayName": "This Is Fine"
+    },
+    {
+      "name": "ttyd",
+      "displayName": "TTYD Terminal"
+    }
+  ],
   "dockerStatusUrl": "http://docker-service-url/ps",
+  "systemdStatusUrl": "http://systemd-service-url/status",
   "toggleServiceUrl": "http://turner-of-and-on-service/messages",
   "pollIntervalSeconds": 5
 }

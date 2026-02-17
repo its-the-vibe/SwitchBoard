@@ -39,6 +39,7 @@ function renderServices(services) {
                 <div class="service-status" data-service="${service.name}">Checking status...</div>
             </div>
             <div class="service-controls">
+                <div class="service-type" data-type="${service.name}"></div>
                 <div class="status-light unknown" data-light="${service.name}"></div>
                 <div class="toggle-switch" data-switch="${service.name}" onclick="toggleService('${service.name}')">
                     <div class="toggle-handle"></div>
@@ -89,6 +90,7 @@ function updateServiceUI(service) {
     const statusElement = document.querySelector(`[data-service="${service.name}"]`);
     const lightElement = document.querySelector(`[data-light="${service.name}"]`);
     const switchElement = document.querySelector(`[data-switch="${service.name}"]`);
+    const typeElement = document.querySelector(`[data-type="${service.name}"]`);
     
     if (!statusElement || !lightElement || !switchElement) {
         return;
@@ -97,19 +99,32 @@ function updateServiceUI(service) {
     // Update status text
     statusElement.textContent = service.status;
     
+    // Update service type indicator
+    if (typeElement) {
+        typeElement.textContent = service.type === 'systemd' ? 'SYSTEMD' : 'DOCKER';
+        typeElement.className = 'service-type';
+        if (service.type === 'systemd') {
+            typeElement.classList.add('systemd');
+        } else {
+            typeElement.classList.add('docker');
+        }
+    }
+    
     // Update status light
     lightElement.className = 'status-light';
-    if (service.state === 'running') {
+    if (service.state === 'running' || service.state === 'active') {
         lightElement.classList.add('running');
-    } else if (service.state === 'exited' || service.state === 'stopped') {
+    } else if (service.state === 'exited' || service.state === 'stopped' || service.state === 'inactive') {
         lightElement.classList.add('stopped');
+    } else if (service.state === 'failed') {
+        lightElement.classList.add('failed');
     } else {
         lightElement.classList.add('unknown');
     }
     
     // Update toggle switch
     switchElement.className = 'toggle-switch';
-    if (service.state === 'running') {
+    if (service.state === 'running' || service.state === 'active') {
         switchElement.classList.add('on');
     }
 }

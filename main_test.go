@@ -85,3 +85,34 @@ func TestExtractServiceName(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildUnknownStatuses(t *testing.T) {
+	services := []ServiceConfig{
+		{Name: "service1", DisplayName: "Service 1"},
+		{Name: "service2", DisplayName: "Service 2"},
+	}
+
+	statuses := buildUnknownStatuses(services, "docker", "Test error")
+
+	if len(statuses) != 2 {
+		t.Errorf("Expected 2 statuses, got %d", len(statuses))
+	}
+
+	for i, status := range statuses {
+		if status.Name != services[i].Name {
+			t.Errorf("Expected name %s, got %s", services[i].Name, status.Name)
+		}
+		if status.DisplayName != services[i].DisplayName {
+			t.Errorf("Expected display name %s, got %s", services[i].DisplayName, status.DisplayName)
+		}
+		if status.State != "unknown" {
+			t.Errorf("Expected state 'unknown', got %s", status.State)
+		}
+		if status.Status != "Test error" {
+			t.Errorf("Expected status 'Test error', got %s", status.Status)
+		}
+		if status.Type != "docker" {
+			t.Errorf("Expected type 'docker', got %s", status.Type)
+		}
+	}
+}
