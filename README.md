@@ -40,7 +40,8 @@ Edit `config.json` to configure your services and endpoints:
     },
     {
       "name": "poppit-builder",
-      "displayName": "Poppit Builder"
+      "displayName": "Poppit Builder",
+      "serviceName": "poppit-builder.service"
     },
     {
       "name": "thisisfine",
@@ -61,7 +62,12 @@ Edit `config.json` to configure your services and endpoints:
 **Configuration Fields:**
 
 - `dockerServices`: Array of Docker services to monitor
+  - `name`: Service name (used for toggling)
+  - `displayName`: Human-readable name shown in UI
 - `systemdServices`: Array of systemd services to monitor
+  - `name`: Service name (used for toggling)
+  - `displayName`: Human-readable name shown in UI
+  - `serviceName` (optional): The actual systemd service name to use for status checks. If not provided, `name` is used. This is useful when the systemctl service name differs from the project name (e.g., "poppit-builder.service" vs "poppit-builder")
 - `dockerStatusUrl`: Endpoint that returns Docker container status (see Docker Integration below)
 - `systemdStatusUrl`: Endpoint that returns systemd service status (see Systemd Integration below)
 - `toggleServiceUrl`: Endpoint for sending service toggle commands

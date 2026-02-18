@@ -27,6 +27,7 @@ type Config struct {
 type ServiceConfig struct {
 	Name        string `json:"name"`
 	DisplayName string `json:"displayName"`
+	ServiceName string `json:"serviceName,omitempty"`
 }
 
 // DockerContainer represents the docker ps JSON output structure
@@ -215,9 +216,14 @@ func fetchSystemdStatuses() []ServiceStatus {
 	}
 	
 	// Build comma-separated list of service names
+	// Use serviceName if present, otherwise fall back to name
 	serviceNames := make([]string, 0, len(config.SystemdServices))
 	for _, svc := range config.SystemdServices {
-		serviceNames = append(serviceNames, svc.Name)
+		if svc.ServiceName != "" {
+			serviceNames = append(serviceNames, svc.ServiceName)
+		} else {
+			serviceNames = append(serviceNames, svc.Name)
+		}
 	}
 	
 	// Build URL with properly encoded services parameter
@@ -273,7 +279,13 @@ func fetchSystemdStatuses() []ServiceStatus {
 		}
 
 		// Check if service exists in systemd status output
-		if state, found := systemdMap[svc.Name]; found {
+		// Use serviceName for lookup if present, otherwise use name
+		lookupName := svc.Name
+		if svc.ServiceName != "" {
+			lookupName = svc.ServiceName
+		}
+		
+		if state, found := systemdMap[lookupName]; found {
 			status.State = state
 			// Map systemd states to user-friendly status messages
 			switch state {
