@@ -16,7 +16,8 @@
     },
     {
       "name": "poppit-builder",
-      "displayName": "Poppit Builder"
+      "displayName": "Poppit Builder",
+      "serviceName": "poppit-builder.service"
     },
     {
       "name": "thisisfine",
