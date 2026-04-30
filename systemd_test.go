@@ -87,13 +87,13 @@ func TestFetchSystemdStatusesEmptyServices(t *testing.T) {
 	requestReceived := false
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestReceived = true
-		
+
 		// Verify no services parameter is sent for empty list
 		servicesParam := r.URL.Query().Get("services")
 		if servicesParam != "" {
 			t.Errorf("Expected no services parameter for empty list, got: %s", servicesParam)
 		}
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprintln(w, "{}")
 	}))
@@ -128,7 +128,7 @@ func TestFetchSystemdStatusesWithSpecialCharacters(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check that the services parameter is present and properly decoded
 		servicesParam := r.URL.Query().Get("services")
-		
+
 		// The query should be properly decoded by the server
 		expectedServices := "service-1,service@test,service+plus"
 		if servicesParam != expectedServices {
@@ -137,9 +137,9 @@ func TestFetchSystemdStatusesWithSpecialCharacters(t *testing.T) {
 
 		// Return a mock response
 		response := map[string]string{
-			"service-1":      "active",
-			"service@test":   "inactive",
-			"service+plus":   "failed",
+			"service-1":    "active",
+			"service@test": "inactive",
+			"service+plus": "failed",
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
@@ -174,7 +174,7 @@ func TestFetchSystemdStatusesWithServiceName(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check that the services parameter contains the serviceName values
 		servicesParam := r.URL.Query().Get("services")
-		
+
 		// We expect the serviceName to be used for service1, and name for service2
 		expectedServices := "service1.service,service2,service3.service"
 		if servicesParam != expectedServices {
@@ -275,4 +275,3 @@ func TestFetchSystemdStatusesServiceNameFallback(t *testing.T) {
 		t.Errorf("Expected state 'active', got '%s'", statuses[0].State)
 	}
 }
-

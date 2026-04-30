@@ -115,7 +115,7 @@ func handleConfig(w http.ResponseWriter, r *http.Request) {
 	allServices := make([]ServiceConfig, 0, len(config.DockerServices)+len(config.SystemdServices))
 	allServices = append(allServices, config.DockerServices...)
 	allServices = append(allServices, config.SystemdServices...)
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"services":            allServices,
@@ -128,15 +128,15 @@ func handleConfig(w http.ResponseWriter, r *http.Request) {
 // handleStatus fetches and returns the current status of all services
 func handleStatus(w http.ResponseWriter, r *http.Request) {
 	statuses := make([]ServiceStatus, 0)
-	
+
 	// Fetch Docker service statuses
 	dockerStatuses := fetchDockerStatuses()
 	statuses = append(statuses, dockerStatuses...)
-	
+
 	// Fetch systemd service statuses
 	systemdStatuses := fetchSystemdStatuses()
 	statuses = append(statuses, systemdStatuses...)
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(statuses)
 }
@@ -146,7 +146,7 @@ func fetchDockerStatuses() []ServiceStatus {
 	if config.DockerStatusURL == "" {
 		return []ServiceStatus{}
 	}
-	
+
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
@@ -205,7 +205,7 @@ func fetchDockerStatuses() []ServiceStatus {
 
 		statuses = append(statuses, status)
 	}
-	
+
 	return statuses
 }
 
@@ -214,7 +214,7 @@ func fetchSystemdStatuses() []ServiceStatus {
 	if config.SystemdStatusURL == "" {
 		return []ServiceStatus{}
 	}
-	
+
 	// Build comma-separated list of service names
 	// Use serviceName if present, otherwise fall back to name
 	serviceNames := make([]string, 0, len(config.SystemdServices))
@@ -225,7 +225,7 @@ func fetchSystemdStatuses() []ServiceStatus {
 			serviceNames = append(serviceNames, svc.Name)
 		}
 	}
-	
+
 	// Build URL with properly encoded services parameter
 	statusURL := config.SystemdStatusURL
 	if len(serviceNames) > 0 {
@@ -235,14 +235,14 @@ func fetchSystemdStatuses() []ServiceStatus {
 			log.Printf("Error parsing systemd status URL: %v", err)
 			return buildUnknownStatuses(config.SystemdServices, "systemd", "Invalid status URL")
 		}
-		
+
 		// Add query parameters
 		query := baseURL.Query()
 		query.Set("services", strings.Join(serviceNames, ","))
 		baseURL.RawQuery = query.Encode()
 		statusURL = baseURL.String()
 	}
-	
+
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
@@ -284,7 +284,7 @@ func fetchSystemdStatuses() []ServiceStatus {
 		if svc.ServiceName != "" {
 			lookupName = svc.ServiceName
 		}
-		
+
 		if state, found := systemdMap[lookupName]; found {
 			status.State = state
 			// Map systemd states to user-friendly status messages
@@ -306,7 +306,7 @@ func fetchSystemdStatuses() []ServiceStatus {
 
 		statuses = append(statuses, status)
 	}
-	
+
 	return statuses
 }
 
