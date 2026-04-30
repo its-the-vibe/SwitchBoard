@@ -1,4 +1,7 @@
 # SwitchBoard
+
+[![CI](https://github.com/its-the-vibe/SwitchBoard/actions/workflows/ci.yml/badge.svg)](https://github.com/its-the-vibe/SwitchBoard/actions/workflows/ci.yml)
+
 A webapp for switching off and switching on services
 
 ## Overview
@@ -75,9 +78,28 @@ Edit `config.json` to configure your services and endpoints:
 
 **Note:** You can configure only Docker services, only systemd services, or both. Leave the URL field empty (or omit it) for service types you don't need.
 
+### Makefile Targets
+
+| Target | Description |
+|--------|-------------|
+| `make build` | Compile the binary |
+| `make run` | Compile and run the application |
+| `make test` | Run all unit tests |
+| `make coverage` | Run tests and produce an HTML coverage report |
+| `make lint` | Run `go vet` and check formatting with `gofmt` |
+| `make fmt` | Auto-format all Go source files |
+| `make clean` | Remove build artifacts |
+| `make all` | Run lint, test, and build (default) |
+
 ### Running the Application
 
-#### Option 1: Using Go directly
+#### Option 1: Using the Makefile
+
+```bash
+make run
+```
+
+#### Option 2: Using Go directly
 
 ```bash
 # Build and run
@@ -96,7 +118,7 @@ To use a different port, set the `PORT` environment variable:
 PORT=3000 go run main.go
 ```
 
-#### Option 2: Using Docker
+#### Option 3: Using Docker
 
 ```bash
 # Build the Docker image
@@ -106,7 +128,7 @@ docker build -t switchboard .
 docker run -p 8080:8080 -v $(pwd)/config.json:/root/config.json switchboard
 ```
 
-#### Option 3: Using Docker Compose
+#### Option 4: Using Docker Compose
 
 ```bash
 # Start the application
