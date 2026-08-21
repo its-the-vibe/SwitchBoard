@@ -1,6 +1,6 @@
 # SwitchBoard
 
-[![CI](https://github.com/its-the-vibe/SwitchBoard/actions/workflows/ci.yml/badge.svg)](https://github.com/its-the-vibe/SwitchBoard/actions/workflows/ci.yml)
+[![CI](https://github.com/its-the-vibe/SwitchBoard/actions/workflows/ci.yaml/badge.svg)](https://github.com/its-the-vibe/SwitchBoard/actions/workflows/ci.yaml)
 
 A webapp for switching off and switching on services
 
