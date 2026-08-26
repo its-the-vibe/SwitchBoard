@@ -1,5 +1,8 @@
 # Build stage
-FROM golang:1.27.0-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27.0-alpine AS builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /app
 
@@ -11,10 +14,12 @@ RUN go mod download
 COPY main.go ./
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o switchboard .
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -installsuffix cgo -o switchboard .
 
 # Runtime stage
-FROM scratch
+FROM gcr.io/distroless/static-debian13:nonroot
+
+WORKDIR /app
 
 # Copy binary from builder
 COPY --from=builder /app/switchboard .
@@ -24,6 +29,8 @@ COPY static ./static
 
 # Expose port
 EXPOSE 8080
+
+USER nonroot:nonroot
 
 # Run the application
 CMD ["./switchboard"]
